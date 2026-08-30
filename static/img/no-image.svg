@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320" role="img" aria-label="Photograph not available">
+  <rect width="480" height="320" fill="#eeedf7"/>
+  <g fill="none" stroke="#767680" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="168" y="112" width="144" height="104" rx="10"/>
+    <path d="M168 190l38-34 28 24 26-24 52 44"/>
+    <circle cx="286" cy="142" r="11"/>
+  </g>
+  <text x="240" y="256" text-anchor="middle" font-family="Roboto, Segoe UI, Arial, sans-serif" font-size="20" fill="#46464f">Photograph not available</text>
+</svg>

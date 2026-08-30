@@ -9,21 +9,38 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'supersecretkey_for_bca_project')
 basedir = os.path.abspath(os.path.dirname(__file__))
-
 # Detect Vercel Serverless environment
 is_vercel = os.environ.get('VERCEL') == '1' or 'VERCEL' in os.environ
 
 db_url = os.environ.get('DATABASE_URL') or os.environ.get('MYSQL_URL')
 if db_url:
+    # Managed Postgres providers hand out the legacy "postgres://" scheme,
+    # which SQLAlchemy 2.x no longer recognises.
     if db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+    # A serverless instance may be frozen between requests, so a pooled
+    # connection is often dead by the time it is reused. Test it first and
+    # recycle well inside the provider's idle timeout.
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,
+        'pool_recycle': 280,
+    }
+elif is_vercel:
+    # Vercel's filesystem is read-only apart from /tmp, and /tmp belongs to a
+    # single serverless instance and is discarded when that instance is
+    # recycled. A SQLite file there cannot hold accounts between requests:
+    # whichever instance serves the next request finds an empty database, the
+    # session's user id no longer resolves, and the visitor is bounced back to
+    # the login page. Refuse to start in that configuration rather than fail
+    # silently at run time.
+    raise RuntimeError(
+        "DATABASE_URL is not set. A deployment on Vercel must be backed by a "
+        "hosted database (for example Postgres), because the local filesystem "
+        "does not survive between requests."
+    )
 else:
-    # On Vercel, use /tmp for writable SQLite database; locally use basedir
-    if is_vercel:
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/lost_and_found.db'
-    else:
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'lost_and_found.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'lost_and_found.db')
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -82,6 +99,12 @@ def allowed_file(filename):
 
 @app.route('/static/uploads/<path:filename>')
 def serve_uploads(filename):
+    # On a serverless host the uploads directory lives in /tmp and is lost when
+    # the instance is recycled, so a photograph recorded in the database may no
+    # longer exist on disk. Serve a placeholder in that case so the page still
+    # renders instead of showing a broken image.
+    if not os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], filename)):
+        return redirect(url_for('static', filename='img/no-image.svg'))
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/')
@@ -264,15 +287,25 @@ def admin_delete_user(id):
     return redirect(url_for('admin_users'))
 
 def init_db():
+    """Create the schema and seed the administrator account.
+
+    This runs when the module is imported, because a serverless deployment has
+    no separate migration step. Two instances can start at the same moment, so
+    a duplicate-key error on the seeded administrator is expected rather than
+    exceptional and is rolled back quietly.
+    """
     with app.app_context():
-        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        try:
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        except OSError as e:
+            print(f"Upload folder note: {e}")
         try:
             db.create_all()
             admin_user = User.query.filter_by(email='admin@college.edu').first()
             if not admin_user:
                 admin_user = User(
-                    name='Platform Administrator', 
-                    email='admin@college.edu', 
+                    name='Platform Administrator',
+                    email='admin@college.edu',
                     password_hash=generate_password_hash('admin', method='pbkdf2:sha256'),
                     role='admin'
                 )
@@ -280,6 +313,7 @@ def init_db():
                 db.session.commit()
                 print("Default admin created: admin@college.edu | password: admin")
         except Exception as e:
+            db.session.rollback()
             print(f"DB Init note: {e}")
 
 # Run database setup on startup
