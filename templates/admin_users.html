@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-users"></i> Manage Users</h1>
+    <p>View registered accounts and manage platform access</p>
+</div>
+
+<div class="admin-nav mb-4">
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary"><i class="fas fa-chart-line"></i> Dashboard Metrics</a>
+    <a href="{{ url_for('admin_items') }}" class="btn btn-secondary"><i class="fas fa-boxes"></i> Manage Items</a>
+    <a href="{{ url_for('admin_users') }}" class="btn btn-primary"><i class="fas fa-users"></i> Manage Users</a>
+</div>
+
+<div class="glass-panel" style="border-radius: var(--border-radius-lg); overflow: hidden;">
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; text-align: left; border-collapse: collapse;">
+            <thead>
+                <tr style="background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-color);">
+                    <th style="padding: 1rem;">ID</th>
+                    <th style="padding: 1rem;">Name</th>
+                    <th style="padding: 1rem;">Email Address</th>
+                    <th style="padding: 1rem;">Role</th>
+                    <th style="padding: 1rem;">Total Items Posted</th>
+                    <th style="padding: 1rem;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 1rem;">{{ user.id }}</td>
+                    <td style="padding: 1rem;"><strong>{{ user.name }}</strong></td>
+                    <td style="padding: 1rem;">{{ user.email }}</td>
+                    <td style="padding: 1rem;">
+                        {% if user.role == 'admin' %}
+                            <span style="color: var(--status-found); font-weight: bold;"><i class="fas fa-shield-alt"></i> Admin</span>
+                        {% else %}
+                            <span style="color: var(--text-secondary);">Student</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 1rem;">{{ user.items|length }} items</td>
+                    <td style="padding: 1rem;">
+                        {% if user.id != current_user.id %}
+                        <form method="POST" action="{{ url_for('admin_delete_user', id=user.id) }}" onsubmit="return confirm('Are you sure you want to ban/delete this user AND all their posted items? This action cannot be undone.');">
+                            <button type="submit" class="btn btn-sm" style="background: var(--status-lost); color: white;"><i class="fas fa-ban"></i> Ban & Delete</button>
+                        </form>
+                        {% else %}
+                        <span style="color: var(--text-light); font-size: 0.85rem;">Current Session</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+# Add Admin Role & Dashboard to Lost & Found Portal
+
+This plan outlines the steps to introduce an Admin role into our existing system. It handles the database schema updates cleanly, protects administrative endpoints, and provides a backend interface for moderation.
+
+## Proposed Roles
+
+As requested ("if need to add different role tell me first"):
+For right now, I propose we add only **two roles**:
+1.  **`student`** (Default): The regular user who can post items, edit their own items, and search.
+2.  **`admin`**: The moderator who can view all users, delete inappropriate items, and delete/manage user accounts.
+
+*I am using a string-based `role` column instead of a simple `is_admin` checkbox. This way, if we ever want to add a `security_guard` or `teacher` role later, we can do it very easily without modifying the database structure again.*
+
+## User Review Required
+
+> [!IMPORTANT]
+> Please review the roles and the plan below. If you only want `student` and `admin` right now, you can just approve this plan. If you want any third role immediately (like `security` or `staff`), please tell me before I begin!
+
+## Proposed Changes
+
+### Database Updates
+#### [MODIFY] `app.py`
+- Update the `User` model to include a new field: `role = db.Column(db.String(20), nullable=False, default='student')`.
+- Write a small setup script logic inside `app.py` to automatically create a default admin account (e.g., `admin@college.edu` / password: `admin`) so you can log in as an admin immediately.
+- We will add logic to automatically upgrade the SQLite database schema without breaking existing data (adding the `role` column).
+
+### Backend Implementation
+#### [MODIFY] `app.py`
+- Add a custom `@admin_required` decorator to protect admin-only routes.
+- **New Routes:**
+  - `/admin/dashboard`: View overall statistics (total users, total items, statuses).
+  - `/admin/items`: See a table of all items with options to delete any item.
+  - `/admin/users`: See a list of all registered users with the ability to delete or ban them.
+
+### Frontend Construction
+#### [NEW] `templates/admin_dashboard.html`
+- A specific view layout for admin metrics (cards showing counts).
+#### [NEW] `templates/admin_items.html`
+- A data table view of all items for easy moderation.
+#### [NEW] `templates/admin_users.html`
+- A data table view of all users registered on the platform.
+#### [MODIFY] `templates/base.html`
+- Add an "Admin Dashboard" link in the navbar that only shows up if `current_user.role == 'admin'`.
+
+## Verification Plan
+
+### Automated/Manual Tests
+- I will run a script to add the new `role` column to the database safely.
+- We will simulate an admin login, verify the `admin_required` decorator blocks regular students, and verify that the admin can successfully delete an item.

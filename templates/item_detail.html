@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title }} - Lost & Found Portal{% endblock %}
+
+{% block content %}
+<div class="item-detail-container">
+    <a href="{{ url_for('index') }}" class="back-link"><i class="fas fa-arrow-left"></i> Back to all items</a>
+    
+    <div class="detail-card glass-panel">
+        <div class="detail-header">
+            <span class="status-badge status-{{ item.status|lower }}">{{ item.status }}</span>
+            <span class="category-badge"><i class="fas fa-tag"></i> {{ item.category }}</span>
+        </div>
+        
+        <div class="detail-body">
+            <div class="detail-image-section">
+                {% if item.image_path %}
+                <img src="{{ url_for('static', filename='uploads/' + item.image_path) }}" alt="{{ item.title }}" class="detail-image border-radius-lg">
+                {% else %}
+                <div class="detail-no-image">
+                    <i class="fas fa-camera"></i>
+                    <span>No Image Provided</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="detail-info-section">
+                <h1 class="detail-title">{{ item.title }}</h1>
+                
+                <div class="meta-info-grid">
+                    <div class="meta-item">
+                        <i class="far fa-calendar-alt"></i>
+                        <div>
+                            <strong>Posted on</strong>
+                            <span>{{ item.date_reported.strftime('%B %d, %Y') }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="meta-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <strong>Location</strong>
+                            <span>{{ item.location }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="meta-item">
+                        <i class="fas fa-user-circle"></i>
+                        <div>
+                            <strong>Posted by</strong>
+                            <span>{{ item.owner.name }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="description-block">
+                    <h3>Description</h3>
+                    <p>{{ item.description }}</p>
+                </div>
+                
+                <div class="contact-block">
+                    <h3>Contact Information</h3>
+                    <div class="contact-box">
+                        <i class="fas fa-address-book"></i> {{ item.contact_info }}
+                    </div>
+                </div>
+                
+                {% if current_user.is_authenticated and current_user.id == item.user_id %}
+                <div class="action-block">
+                    <h3>Update Status</h3>
+                    <form method="POST" action="{{ url_for('update_status', id=item.id) }}" class="status-update-form">
+                        <select name="status" class="status-select">
+                            <option value="Lost" {% if item.status == 'Lost' %}selected{% endif %}>Lost</option>
+                            <option value="Found" {% if item.status == 'Found' %}selected{% endif %}>Found</option>
+                            <option value="Claimed" {% if item.status == 'Claimed' %}selected{% endif %}>Claimed</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

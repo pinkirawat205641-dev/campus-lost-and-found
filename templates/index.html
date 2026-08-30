@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Lost & Found Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-search-dollar"></i> Missing & Found Items</h1>
+    <p>Help your fellow campus members find what they lost!</p>
+</div>
+
+<div class="search-filter-section glass-panel">
+    <form method="GET" action="{{ url_for('index') }}" class="search-form">
+        <div class="form-group search-input-group">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" name="search" placeholder="Search items..." value="{{ search_query }}">
+        </div>
+        <div class="form-group">
+            <select name="category">
+                <option value="">All Categories</option>
+                <option value="Electronics" {% if category_filter == 'Electronics' %}selected{% endif %}>Electronics</option>
+                <option value="Books" {% if category_filter == 'Books' %}selected{% endif %}>Books</option>
+                <option value="Accessories" {% if category_filter == 'Accessories' %}selected{% endif %}>Accessories</option>
+                <option value="Others" {% if category_filter == 'Others' %}selected{% endif %}>Others</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <select name="status">
+                <option value="">All Statuses</option>
+                <option value="Lost" {% if status_filter == 'Lost' %}selected{% endif %}>Lost</option>
+                <option value="Found" {% if status_filter == 'Found' %}selected{% endif %}>Found</option>
+                <option value="Claimed" {% if status_filter == 'Claimed' %}selected{% endif %}>Claimed</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">Clear</a>
+    </form>
+</div>
+
+<div class="items-grid">
+    {% if items %}
+        {% for item in items %}
+        <div class="item-card {% if item.status == 'Claimed' %}claimed-card{% endif %}">
+            <div class="item-image-wrapper">
+                {% if item.image_path %}
+                <img src="{{ url_for('static', filename='uploads/' + item.image_path) }}" alt="{{ item.title }}" class="item-image">
+                {% else %}
+                <div class="no-image">
+                    <i class="fas fa-camera text-muted"></i>
+                    <span>No Image</span>
+                </div>
+                {% endif %}
+                <span class="status-badge status-{{ item.status|lower }}">{{ item.status }}</span>
+            </div>
+            
+            <div class="item-content">
+                <div class="item-meta">
+                    <span class="category"><i class="fas fa-tag"></i> {{ item.category }}</span>
+                    <span class="date"><i class="far fa-clock"></i> {{ item.date_reported.strftime('%b %d, %Y') }}</span>
+                </div>
+                <h3 class="item-title">{{ item.title }}</h3>
+                <p class="item-desc">{{ item.description|truncate(80) }}</p>
+                
+                <div class="item-footer">
+                    <span class="location" title="{{ item.location }}"><i class="fas fa-map-marker-alt"></i> {{ item.location|truncate(20) }}</span>
+                    <a href="{{ url_for('item_detail', id=item.id) }}" class="btn btn-outline-primary btn-sm">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon-wrapper">
+                <i class="fas fa-box-open empty-icon"></i>
+            </div>
+            <h2>No items match your search</h2>
+            <p>Try adjusting your filters or search terms.</p>
+            {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('login') }}" class="btn btn-primary mt-4">Login to Post an Item</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

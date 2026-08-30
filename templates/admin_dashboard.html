@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-shield-alt"></i> Admin Dashboard</h1>
+    <p>System Overview & Moderation</p>
+</div>
+
+<div class="admin-nav mb-4">
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary"><i class="fas fa-chart-line"></i> Dashboard Metrics</a>
+    <a href="{{ url_for('admin_items') }}" class="btn btn-secondary"><i class="fas fa-boxes"></i> Manage Items</a>
+    <a href="{{ url_for('admin_users') }}" class="btn btn-secondary"><i class="fas fa-users"></i> Manage Users</a>
+</div>
+
+<div class="items-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+    <div class="item-card glass-panel" style="text-align: center; padding: 2rem;">
+        <i class="fas fa-users mb-2" style="font-size: 2.5rem; color: var(--primary-color);"></i>
+        <h2 style="font-size: 2.5rem; color: white; margin: 1rem 0;">{{ total_users }}</h2>
+        <span style="color: var(--text-secondary); font-weight: 500;">Total Users</span>
+    </div>
+    
+    <div class="item-card glass-panel" style="text-align: center; padding: 2rem;">
+        <i class="fas fa-boxes mb-2" style="font-size: 2.5rem; color: var(--text-primary);"></i>
+        <h2 style="font-size: 2.5rem; color: white; margin: 1rem 0;">{{ total_items }}</h2>
+        <span style="color: var(--text-secondary); font-weight: 500;">Total Items</span>
+    </div>
+
+    <div class="item-card glass-panel" style="text-align: center; padding: 2rem;">
+        <i class="fas fa-search mb-2" style="font-size: 2.5rem; color: var(--status-lost);"></i>
+        <h2 style="font-size: 2.5rem; color: white; margin: 1rem 0;">{{ total_lost }}</h2>
+        <span style="color: var(--text-secondary); font-weight: 500;">Currently Lost</span>
+    </div>
+
+    <div class="item-card glass-panel" style="text-align: center; padding: 2rem;">
+        <i class="fas fa-check-circle mb-2" style="font-size: 2.5rem; color: var(--status-found);"></i>
+        <h2 style="font-size: 2.5rem; color: white; margin: 1rem 0;">{{ total_found }}</h2>
+        <span style="color: var(--text-secondary); font-weight: 500;">Found Needs Claiming</span>
+    </div>
+
+    <div class="item-card glass-panel" style="text-align: center; padding: 2rem;">
+        <i class="fas fa-handshake mb-2" style="font-size: 2.5rem; color: var(--status-claimed);"></i>
+        <h2 style="font-size: 2.5rem; color: white; margin: 1rem 0;">{{ total_claimed }}</h2>
+        <span style="color: var(--text-secondary); font-weight: 500;">Successfully Claimed</span>
+    </div>
+</div>
+{% endblock %}

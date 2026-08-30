@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Lost & Found Portal{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card glass-panel">
+        <div class="auth-header">
+            <h2>Welcome Back</h2>
+            <p>Login to your account to post or claim items</p>
+        </div>
+        
+        <form method="POST" action="{{ url_for('login') }}" class="auth-form">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" name="email" required placeholder="example@college.edu">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" name="password" required placeholder="••••••••">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block">Login to Account</button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>Don't have an account? <a href="{{ url_for('register') }}">Create one here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
