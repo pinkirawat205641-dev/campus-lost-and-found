@@ -10,18 +10,28 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'supersecretkey_for_bca_project')
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-# Database Configuration (supports Cloud DB URL, MySQL, or SQLite fallback)
+# Detect Vercel Serverless environment
+is_vercel = os.environ.get('VERCEL') == '1' or 'VERCEL' in os.environ
+
 db_url = os.environ.get('DATABASE_URL') or os.environ.get('MYSQL_URL')
 if db_url:
     if db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 else:
-    # Use SQLite for portable deployment if no external DB URL is set
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'lost_and_found.db')
+    # On Vercel, use /tmp for writable SQLite database; locally use basedir
+    if is_vercel:
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/lost_and_found.db'
+    else:
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'lost_and_found.db')
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads')
+
+if is_vercel:
+    app.config['UPLOAD_FOLDER'] = '/tmp/uploads'
+else:
+    app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads')
+
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5 MB max
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
@@ -69,6 +79,10 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # --- ROUTES ---
+
+@app.route('/static/uploads/<path:filename>')
+def serve_uploads(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/')
 def index():
