@@ -4,3 +4,7 @@ __pycache__/
 ~$*.docx
 .DS_Store
 instance/
+*.db
+*.tmp
+~WRL*.tmp
+static/uploads/
