@@ -11,3 +11,5 @@ static/uploads/
 SURAJ*.pdf
 BCA_Report_*.docx
 OG_*.docx
+.env
+.env.*
