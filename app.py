@@ -7,10 +7,20 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'supersecretkey_for_bca_project'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root@localhost/lost_and_found_db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'supersecretkey_for_bca_project')
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+# Database Configuration (supports Cloud DB URL, MySQL, or SQLite fallback)
+db_url = os.environ.get('DATABASE_URL') or os.environ.get('MYSQL_URL')
+if db_url:
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+else:
+    # Use SQLite for portable deployment if no external DB URL is set
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'lost_and_found.db')
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5 MB max
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
@@ -239,23 +249,27 @@ def admin_delete_user(id):
     flash('User deleted successfully.', 'success')
     return redirect(url_for('admin_users'))
 
-if __name__ == '__main__':
+def init_db():
     with app.app_context():
-        # Ensure uploads folder exists
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-        db.create_all()
-        
-        # Create default admin if none exists
-        admin_user = User.query.filter_by(email='admin@college.edu').first()
-        if not admin_user:
-            admin_user = User(
-                name='Platform Administrator', 
-                email='admin@college.edu', 
-                password_hash=generate_password_hash('admin', method='pbkdf2:sha256'),
-                role='admin'
-            )
-            db.session.add(admin_user)
-            db.session.commit()
-            print("Default admin created: admin@college.edu | password: admin")
-            
+        try:
+            db.create_all()
+            admin_user = User.query.filter_by(email='admin@college.edu').first()
+            if not admin_user:
+                admin_user = User(
+                    name='Platform Administrator', 
+                    email='admin@college.edu', 
+                    password_hash=generate_password_hash('admin', method='pbkdf2:sha256'),
+                    role='admin'
+                )
+                db.session.add(admin_user)
+                db.session.commit()
+                print("Default admin created: admin@college.edu | password: admin")
+        except Exception as e:
+            print(f"DB Init note: {e}")
+
+# Run database setup on startup
+init_db()
+
+if __name__ == '__main__':
     app.run(debug=True, port=5000)
