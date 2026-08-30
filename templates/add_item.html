@@ -1,72 +1,82 @@
 {% extends "base.html" %}
 
-{% block title %}Post Item - Lost & Found Portal{% endblock %}
+{% block title %}Report an Item — CampusFind{% endblock %}
 
 {% block content %}
-<div class="form-container">
-    <div class="form-card glass-panel">
-        <div class="form-header">
-            <h2>Post an Item</h2>
-            <p>Fill in the details below. The more accurate, the better!</p>
-        </div>
-        
-        <form method="POST" action="{{ url_for('add_item') }}" enctype="multipart/form-data" class="main-form">
-            <div class="form-row">
-                <div class="form-group half-width">
-                    <label for="title">Item Title <span class="required">*</span></label>
-                    <input type="text" id="title" name="title" required placeholder="E.g., Blue Dell Laptop">
+<div class="page-header">
+    <h1><span class="material-symbols-outlined">add_circle</span> Report an Item</h1>
+    <p>Describe the item as precisely as you can — an accurate report is far more likely to be matched.</p>
+</div>
+
+<div class="card">
+    <div class="card__header">
+        <h2>Item particulars</h2>
+        <p>Fields marked with an asterisk are required.</p>
+    </div>
+
+    <div class="card__body">
+        <form method="POST" action="{{ url_for('add_item') }}" enctype="multipart/form-data">
+
+            <div class="form-grid mb-3">
+                <div class="field">
+                    <label class="field__label" for="title">Item title <span class="required">*</span></label>
+                    <input type="text" id="title" name="title" required placeholder="e.g. Blue Dell laptop bag">
                 </div>
-                
-                <div class="form-group half-width">
-                    <label for="status">Posting Type <span class="required">*</span></label>
+
+                <div class="field">
+                    <label class="field__label" for="status">Type of report <span class="required">*</span></label>
                     <select id="status" name="status" required>
-                        <option value="Lost">I Lost Something</option>
-                        <option value="Found">I Found Something</option>
+                        <option value="Lost">I have lost something</option>
+                        <option value="Found">I have found something</option>
                     </select>
                 </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group half-width">
-                    <label for="category">Category <span class="required">*</span></label>
+
+                <div class="field">
+                    <label class="field__label" for="category">Category <span class="required">*</span></label>
                     <select id="category" name="category" required>
                         <option value="Electronics">Electronics</option>
-                        <option value="Books">Books & Notes</option>
-                        <option value="Accessories">Accessories & Wearables</option>
+                        <option value="Books">Books &amp; notes</option>
+                        <option value="Accessories">Accessories &amp; wearables</option>
                         <option value="Others">Others</option>
                     </select>
                 </div>
-                <div class="form-group half-width">
-                    <label for="location">Location <span class="required">*</span></label>
-                    <input type="text" id="location" name="location" required placeholder="Where was it lost/found? (e.g., Library)">
+
+                <div class="field">
+                    <label class="field__label" for="location">Location <span class="required">*</span></label>
+                    <input type="text" id="location" name="location" required placeholder="e.g. Central Library, second floor">
+                </div>
+
+                <div class="field field--span2">
+                    <label class="field__label" for="description">Detailed description <span class="required">*</span></label>
+                    <textarea id="description" name="description" rows="5" required
+                              placeholder="Colour, make, distinguishing marks, contents — anything that identifies the item."></textarea>
+                </div>
+
+                <div class="field field--span2">
+                    <label class="field__label" for="contact_info">Your contact details <span class="required">*</span></label>
+                    <input type="text" id="contact_info" name="contact_info" required
+                           placeholder="Mobile number, or instructions for arranging a handover">
+                    <span class="field__hint">These details are visible to anyone viewing the item.</span>
                 </div>
             </div>
-            
-            <div class="form-group">
-                <label for="description">Detailed Description <span class="required">*</span></label>
-                <textarea id="description" name="description" rows="4" required placeholder="Describe the item in detail. Mention any identifiable marks..."></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label for="contact_info">Your Contact Info <span class="required">*</span></label>
-                <input type="text" id="contact_info" name="contact_info" required placeholder="Phone number or specific instructions to meet">
-            </div>
-            
-            <div class="form-group">
-                <label for="image">Upload Image (Optional but recommended)</label>
-                <div class="file-upload-wrapper">
-                    <div class="file-upload-box">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <span>Click to browse</span>
+
+            <div class="field">
+                <label class="field__label" for="image">Photograph (optional, but strongly recommended)</label>
+                <div class="file-upload">
+                    <div class="file-upload__box">
+                        <span class="material-symbols-outlined">cloud_upload</span>
+                        <span class="file-upload__text">Click to choose a photograph</span>
                     </div>
                     <input type="file" id="image" name="image" accept=".jpg, .jpeg, .png" class="file-input">
                 </div>
-                <small class="form-text text-muted">Max file size: 5MB. Allowed formats: JPG, PNG.</small>
+                <span class="field__hint">JPG or PNG only. Maximum file size 5&nbsp;MB.</span>
             </div>
-            
+
             <div class="form-actions">
-                <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Submit Post</button>
+                <a href="{{ url_for('index') }}" class="btn btn--text">Cancel</a>
+                <button type="submit" class="btn btn--filled">
+                    <span class="material-symbols-outlined">send</span> Publish Report
+                </button>
             </div>
         </form>
     </div>

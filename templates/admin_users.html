@@ -1,59 +1,77 @@
 {% extends "base.html" %}
 
-{% block title %}Manage Users - Admin{% endblock %}
+{% block title %}Manage Users — Administration{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1><i class="fas fa-users"></i> Manage Users</h1>
-    <p>View registered accounts and manage platform access</p>
+    <h1><span class="material-symbols-outlined">group</span> Manage Users</h1>
+    <p>Registered accounts. Deleting a member also deletes every item that member reported.</p>
 </div>
 
-<div class="admin-nav mb-4">
-    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary"><i class="fas fa-chart-line"></i> Dashboard Metrics</a>
-    <a href="{{ url_for('admin_items') }}" class="btn btn-secondary"><i class="fas fa-boxes"></i> Manage Items</a>
-    <a href="{{ url_for('admin_users') }}" class="btn btn-primary"><i class="fas fa-users"></i> Manage Users</a>
-</div>
+<nav class="tabs">
+    <a href="{{ url_for('admin_dashboard') }}" class="tab">
+        <span class="material-symbols-outlined">insights</span> Overview
+    </a>
+    <a href="{{ url_for('admin_items') }}" class="tab">
+        <span class="material-symbols-outlined">list_alt</span> Items
+    </a>
+    <a href="{{ url_for('admin_users') }}" class="tab tab--active">
+        <span class="material-symbols-outlined">group</span> Users
+    </a>
+</nav>
 
-<div class="glass-panel" style="border-radius: var(--border-radius-lg); overflow: hidden;">
-    <div style="overflow-x: auto;">
-        <table style="width: 100%; text-align: left; border-collapse: collapse;">
+<div class="table-wrap">
+    <div class="table-scroll">
+        <table class="data-table">
             <thead>
-                <tr style="background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-color);">
-                    <th style="padding: 1rem;">ID</th>
-                    <th style="padding: 1rem;">Name</th>
-                    <th style="padding: 1rem;">Email Address</th>
-                    <th style="padding: 1rem;">Role</th>
-                    <th style="padding: 1rem;">Total Items Posted</th>
-                    <th style="padding: 1rem;">Action</th>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email address</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">Items reported</th>
+                    <th scope="col">Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for user in users %}
-                <tr style="border-bottom: 1px solid var(--border-color);">
-                    <td style="padding: 1rem;">{{ user.id }}</td>
-                    <td style="padding: 1rem;"><strong>{{ user.name }}</strong></td>
-                    <td style="padding: 1rem;">{{ user.email }}</td>
-                    <td style="padding: 1rem;">
+                <tr>
+                    <td class="num">{{ user.id }}</td>
+                    <td><strong>{{ user.name }}</strong></td>
+                    <td class="email">{{ user.email }}</td>
+                    <td>
                         {% if user.role == 'admin' %}
-                            <span style="color: var(--status-found); font-weight: bold;"><i class="fas fa-shield-alt"></i> Admin</span>
+                            <span class="role-badge role-badge--admin">
+                                <span class="material-symbols-outlined">verified_user</span> Administrator
+                            </span>
                         {% else %}
-                            <span style="color: var(--text-secondary);">Student</span>
+                            <span class="role-badge role-badge--student">
+                                <span class="material-symbols-outlined">school</span> Student
+                            </span>
                         {% endif %}
                     </td>
-                    <td style="padding: 1rem;">{{ user.items|length }} items</td>
-                    <td style="padding: 1rem;">
+                    <td class="num">{{ user.items|length }}</td>
+                    <td>
                         {% if user.id != current_user.id %}
-                        <form method="POST" action="{{ url_for('admin_delete_user', id=user.id) }}" onsubmit="return confirm('Are you sure you want to ban/delete this user AND all their posted items? This action cannot be undone.');">
-                            <button type="submit" class="btn btn-sm" style="background: var(--status-lost); color: white;"><i class="fas fa-ban"></i> Ban & Delete</button>
+                        <form method="POST" action="{{ url_for('admin_delete_user', id=user.id) }}"
+                              onsubmit="return confirm('Delete this member and every item they reported? This action cannot be undone.');">
+                            <button type="submit" class="btn btn--danger btn--sm">
+                                <span class="material-symbols-outlined">person_remove</span> Delete
+                            </button>
                         </form>
                         {% else %}
-                        <span style="color: var(--text-light); font-size: 0.85rem;">Current Session</span>
+                        <span class="chip"><span class="material-symbols-outlined">badge</span> Current session</span>
                         {% endif %}
                     </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-muted">No accounts have been registered yet.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    <div class="table-caption">{{ users|length }} account{{ '' if users|length == 1 else 's' }} in total.</div>
 </div>
 {% endblock %}

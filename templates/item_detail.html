@@ -1,85 +1,92 @@
 {% extends "base.html" %}
 
-{% block title %}{{ item.title }} - Lost & Found Portal{% endblock %}
+{% block title %}{{ item.title }} — CampusFind{% endblock %}
 
 {% block content %}
-<div class="item-detail-container">
-    <a href="{{ url_for('index') }}" class="back-link"><i class="fas fa-arrow-left"></i> Back to all items</a>
-    
-    <div class="detail-card glass-panel">
-        <div class="detail-header">
-            <span class="status-badge status-{{ item.status|lower }}">{{ item.status }}</span>
-            <span class="category-badge"><i class="fas fa-tag"></i> {{ item.category }}</span>
-        </div>
-        
-        <div class="detail-body">
-            <div class="detail-image-section">
-                {% if item.image_path %}
-                <img src="{{ url_for('static', filename='uploads/' + item.image_path) }}" alt="{{ item.title }}" class="detail-image border-radius-lg">
-                {% else %}
-                <div class="detail-no-image">
-                    <i class="fas fa-camera"></i>
-                    <span>No Image Provided</span>
-                </div>
-                {% endif %}
+<a href="{{ url_for('index') }}" class="back-link">
+    <span class="material-symbols-outlined">arrow_back</span> Back to all items
+</a>
+
+<div class="detail-layout">
+
+    <!-- Left column: photograph -->
+    <div class="detail-media">
+        {% if item.image_path %}
+            <img src="{{ url_for('static', filename='uploads/' + item.image_path) }}" alt="{{ item.title }}">
+        {% else %}
+            <div class="detail-media__placeholder">
+                <span class="material-symbols-outlined">no_photography</span>
+                <span>No photograph was provided</span>
             </div>
-            
-            <div class="detail-info-section">
-                <h1 class="detail-title">{{ item.title }}</h1>
-                
-                <div class="meta-info-grid">
-                    <div class="meta-item">
-                        <i class="far fa-calendar-alt"></i>
-                        <div>
-                            <strong>Posted on</strong>
-                            <span>{{ item.date_reported.strftime('%B %d, %Y') }}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="meta-item">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <div>
-                            <strong>Location</strong>
-                            <span>{{ item.location }}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="meta-item">
-                        <i class="fas fa-user-circle"></i>
-                        <div>
-                            <strong>Posted by</strong>
-                            <span>{{ item.owner.name }}</span>
-                        </div>
-                    </div>
+        {% endif %}
+    </div>
+
+    <!-- Right column: particulars -->
+    <div>
+        <div class="detail-head">
+            <span class="status status--{{ item.status|lower }}">{{ item.status }}</span>
+            <span class="chip"><span class="material-symbols-outlined">sell</span> {{ item.category }}</span>
+            <span class="chip"><span class="material-symbols-outlined">tag</span> Item #{{ item.id }}</span>
+        </div>
+
+        <h1 class="detail-title">{{ item.title }}</h1>
+
+        <div class="detail-facts">
+            <div class="fact">
+                <span class="material-symbols-outlined">event</span>
+                <div>
+                    <span class="fact__label">Reported on</span>
+                    <span class="fact__value">{{ item.date_reported.strftime('%d %B %Y') }}</span>
                 </div>
-                
-                <div class="description-block">
-                    <h3>Description</h3>
-                    <p>{{ item.description }}</p>
+            </div>
+            <div class="fact">
+                <span class="material-symbols-outlined">location_on</span>
+                <div>
+                    <span class="fact__label">Location</span>
+                    <span class="fact__value">{{ item.location }}</span>
                 </div>
-                
-                <div class="contact-block">
-                    <h3>Contact Information</h3>
-                    <div class="contact-box">
-                        <i class="fas fa-address-book"></i> {{ item.contact_info }}
-                    </div>
+            </div>
+            <div class="fact">
+                <span class="material-symbols-outlined">account_circle</span>
+                <div>
+                    <span class="fact__label">Reported by</span>
+                    <span class="fact__value">{{ item.owner.name }}</span>
                 </div>
-                
-                {% if current_user.is_authenticated and current_user.id == item.user_id %}
-                <div class="action-block">
-                    <h3>Update Status</h3>
-                    <form method="POST" action="{{ url_for('update_status', id=item.id) }}" class="status-update-form">
-                        <select name="status" class="status-select">
-                            <option value="Lost" {% if item.status == 'Lost' %}selected{% endif %}>Lost</option>
-                            <option value="Found" {% if item.status == 'Found' %}selected{% endif %}>Found</option>
-                            <option value="Claimed" {% if item.status == 'Claimed' %}selected{% endif %}>Claimed</option>
-                        </select>
-                        <button type="submit" class="btn btn-primary btn-sm">Update</button>
-                    </form>
-                </div>
-                {% endif %}
             </div>
         </div>
+
+        <div class="detail-block">
+            <h2 class="section-title">Description</h2>
+            <p>{{ item.description }}</p>
+        </div>
+
+        <div class="detail-block">
+            <h2 class="section-title">Contact the reporter</h2>
+            <div class="contact-box">
+                <span class="material-symbols-outlined">contact_phone</span>
+                {{ item.contact_info }}
+            </div>
+        </div>
+
+        <!-- The status control is offered only to the owner, and the server
+             re-checks ownership in the update_status route. -->
+        {% if current_user.is_authenticated and current_user.id == item.user_id %}
+        <div class="card">
+            <div class="card__body">
+                <h2 class="section-title">Update the status of this item</h2>
+                <form method="POST" action="{{ url_for('update_status', id=item.id) }}" class="status-form">
+                    <select name="status" aria-label="New status">
+                        <option value="Lost" {% if item.status == 'Lost' %}selected{% endif %}>Lost</option>
+                        <option value="Found" {% if item.status == 'Found' %}selected{% endif %}>Found</option>
+                        <option value="Claimed" {% if item.status == 'Claimed' %}selected{% endif %}>Claimed</option>
+                    </select>
+                    <button type="submit" class="btn btn--filled">
+                        <span class="material-symbols-outlined">save</span> Save
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

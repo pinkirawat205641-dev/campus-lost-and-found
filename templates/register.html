@@ -1,45 +1,54 @@
 {% extends "base.html" %}
 
-{% block title %}Sign Up - Lost & Found Portal{% endblock %}
+{% block title %}Create Account — CampusFind{% endblock %}
+
+{# The authentication screens use the app bar but no navigation drawer. #}
+{% block bodyclass %}auth-mode{% endblock %}
+{% block appbar_menu %}{% endblock %}
+{% block navigation %}{% endblock %}
 
 {% block content %}
-<div class="auth-container">
-    <div class="auth-card glass-panel">
-        <div class="auth-header">
-            <h2>Create Account</h2>
-            <p>Join the campus network to help others and yourself</p>
+<div class="auth-layout">
+    <div class="auth-card">
+        <div class="auth-card__header">
+            <div class="auth-card__icon"><span class="material-symbols-outlined">person_add</span></div>
+            <h1>Create your account</h1>
+            <p>Join the campus register to report items and to claim what is yours.</p>
         </div>
-        
-        <form method="POST" action="{{ url_for('register') }}" class="auth-form">
-            <div class="form-group">
-                <label for="name">Full Name</label>
-                <div class="input-with-icon">
-                    <i class="fas fa-user"></i>
-                    <input type="text" id="name" name="name" required placeholder="John Doe">
-                </div>
+
+        <form method="POST" action="{{ url_for('register') }}">
+            <div class="field">
+                <label class="field__label" for="name">Full name</label>
+                <span class="field__control">
+                    <span class="material-symbols-outlined">person</span>
+                    <input type="text" id="name" name="name" required placeholder="Your full name" autocomplete="name">
+                </span>
             </div>
-            
-            <div class="form-group">
-                <label for="email">College Email Address</label>
-                <div class="input-with-icon">
-                    <i class="fas fa-envelope"></i>
-                    <input type="email" id="email" name="email" required placeholder="john@college.edu">
-                </div>
+
+            <div class="field">
+                <label class="field__label" for="email">College email address</label>
+                <span class="field__control">
+                    <span class="material-symbols-outlined">mail</span>
+                    <input type="email" id="email" name="email" required placeholder="you@college.edu" autocomplete="email">
+                </span>
             </div>
-            
-            <div class="form-group">
-                <label for="password">Password</label>
-                <div class="input-with-icon">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="password" name="password" required placeholder="Create a strong password">
-                </div>
+
+            <div class="field">
+                <label class="field__label" for="password">Password</label>
+                <span class="field__control">
+                    <span class="material-symbols-outlined">password</span>
+                    <input type="password" id="password" name="password" required placeholder="Choose a strong password" autocomplete="new-password">
+                </span>
             </div>
-            
-            <button type="submit" class="btn btn-primary btn-block">Register Account</button>
+
+            <button type="submit" class="btn btn--filled btn--block mt-3">
+                <span class="material-symbols-outlined">how_to_reg</span> Create Account
+            </button>
         </form>
-        
-        <div class="auth-footer">
-            <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+
+        <div class="auth-card__footer">
+            Already registered?
+            <a href="{{ url_for('login') }}">Sign in instead</a>
         </div>
     </div>
 </div>

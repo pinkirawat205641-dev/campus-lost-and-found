@@ -1,83 +1,105 @@
 {% extends "base.html" %}
 
-{% block title %}Home - Lost & Found Portal{% endblock %}
+{% block title %}Browse Items — CampusFind{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1><i class="fas fa-search-dollar"></i> Missing & Found Items</h1>
-    <p>Help your fellow campus members find what they lost!</p>
+    <h1><span class="material-symbols-outlined">inventory_2</span> Lost &amp; Found Register</h1>
+    <p>Every item reported on campus, searchable by keyword, category and status.</p>
 </div>
 
-<div class="search-filter-section glass-panel">
-    <form method="GET" action="{{ url_for('index') }}" class="search-form">
-        <div class="form-group search-input-group">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" name="search" placeholder="Search items..." value="{{ search_query }}">
-        </div>
-        <div class="form-group">
-            <select name="category">
-                <option value="">All Categories</option>
-                <option value="Electronics" {% if category_filter == 'Electronics' %}selected{% endif %}>Electronics</option>
-                <option value="Books" {% if category_filter == 'Books' %}selected{% endif %}>Books</option>
-                <option value="Accessories" {% if category_filter == 'Accessories' %}selected{% endif %}>Accessories</option>
-                <option value="Others" {% if category_filter == 'Others' %}selected{% endif %}>Others</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <select name="status">
-                <option value="">All Statuses</option>
-                <option value="Lost" {% if status_filter == 'Lost' %}selected{% endif %}>Lost</option>
-                <option value="Found" {% if status_filter == 'Found' %}selected{% endif %}>Found</option>
-                <option value="Claimed" {% if status_filter == 'Claimed' %}selected{% endif %}>Claimed</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Filter</button>
-        <a href="{{ url_for('index') }}" class="btn btn-secondary">Clear</a>
-    </form>
-</div>
+<!-- Filter bar: a single GET form, so filters survive in the query string -->
+<form method="GET" action="{{ url_for('index') }}" class="filter-bar">
+    <div class="filter-bar__search">
+        <span class="material-symbols-outlined">search</span>
+        <input type="text" name="search" placeholder="Search by title or description" value="{{ search_query }}" aria-label="Search items">
+    </div>
+
+    <select name="category" aria-label="Filter by category">
+        <option value="">All categories</option>
+        <option value="Electronics" {% if category_filter == 'Electronics' %}selected{% endif %}>Electronics</option>
+        <option value="Books" {% if category_filter == 'Books' %}selected{% endif %}>Books</option>
+        <option value="Accessories" {% if category_filter == 'Accessories' %}selected{% endif %}>Accessories</option>
+        <option value="Others" {% if category_filter == 'Others' %}selected{% endif %}>Others</option>
+    </select>
+
+    <select name="status" aria-label="Filter by status">
+        <option value="">All statuses</option>
+        <option value="Lost" {% if status_filter == 'Lost' %}selected{% endif %}>Lost</option>
+        <option value="Found" {% if status_filter == 'Found' %}selected{% endif %}>Found</option>
+        <option value="Claimed" {% if status_filter == 'Claimed' %}selected{% endif %}>Claimed</option>
+    </select>
+
+    <button type="submit" class="btn btn--filled">
+        <span class="material-symbols-outlined">filter_alt</span> Apply
+    </button>
+    <a href="{{ url_for('index') }}" class="btn btn--text">Reset</a>
+</form>
+
+{% if items %}
+<p class="result-count">
+    Showing {{ items|length }} item{{ '' if items|length == 1 else 's' }}{% if search_query %} matching &ldquo;{{ search_query }}&rdquo;{% endif %}.
+</p>
+{% endif %}
 
 <div class="items-grid">
     {% if items %}
         {% for item in items %}
-        <div class="item-card {% if item.status == 'Claimed' %}claimed-card{% endif %}">
-            <div class="item-image-wrapper">
+        <article class="item-card {% if item.status == 'Claimed' %}item-card--claimed{% endif %}">
+            <div class="item-card__media">
                 {% if item.image_path %}
-                <img src="{{ url_for('static', filename='uploads/' + item.image_path) }}" alt="{{ item.title }}" class="item-image">
+                    <img src="{{ url_for('static', filename='uploads/' + item.image_path) }}" alt="{{ item.title }}">
                 {% else %}
-                <div class="no-image">
-                    <i class="fas fa-camera text-muted"></i>
-                    <span>No Image</span>
-                </div>
+                    <div class="item-card__placeholder">
+                        <span class="material-symbols-outlined">no_photography</span>
+                        <span>No photograph</span>
+                    </div>
                 {% endif %}
-                <span class="status-badge status-{{ item.status|lower }}">{{ item.status }}</span>
+                <span class="status status--{{ item.status|lower }}">{{ item.status }}</span>
             </div>
-            
-            <div class="item-content">
-                <div class="item-meta">
-                    <span class="category"><i class="fas fa-tag"></i> {{ item.category }}</span>
-                    <span class="date"><i class="far fa-clock"></i> {{ item.date_reported.strftime('%b %d, %Y') }}</span>
+
+            <div class="item-card__body">
+                <div class="item-card__meta">
+                    <span><span class="material-symbols-outlined">sell</span> {{ item.category }}</span>
+                    <span><span class="material-symbols-outlined">schedule</span> {{ item.date_reported.strftime('%d %b %Y') }}</span>
                 </div>
-                <h3 class="item-title">{{ item.title }}</h3>
-                <p class="item-desc">{{ item.description|truncate(80) }}</p>
-                
-                <div class="item-footer">
-                    <span class="location" title="{{ item.location }}"><i class="fas fa-map-marker-alt"></i> {{ item.location|truncate(20) }}</span>
-                    <a href="{{ url_for('item_detail', id=item.id) }}" class="btn btn-outline-primary btn-sm">View Details</a>
+
+                <h3 class="item-card__title">{{ item.title }}</h3>
+                <p class="item-card__desc">{{ item.description|truncate(90) }}</p>
+
+                <div class="item-card__footer">
+                    <span class="location" title="{{ item.location }}">
+                        <span class="material-symbols-outlined">location_on</span> {{ item.location|truncate(20) }}
+                    </span>
+                    <a href="{{ url_for('item_detail', id=item.id) }}" class="btn btn--outlined btn--sm">Details</a>
                 </div>
             </div>
-        </div>
+        </article>
         {% endfor %}
     {% else %}
         <div class="empty-state">
-            <div class="empty-icon-wrapper">
-                <i class="fas fa-box-open empty-icon"></i>
-            </div>
+            <div class="empty-state__icon"><span class="material-symbols-outlined">search_off</span></div>
             <h2>No items match your search</h2>
-            <p>Try adjusting your filters or search terms.</p>
-            {% if not current_user.is_authenticated %}
-                <a href="{{ url_for('login') }}" class="btn btn-primary mt-4">Login to Post an Item</a>
+            <p>Try a different keyword, or clear the category and status filters.</p>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('add_item') }}" class="btn btn--filled">
+                    <span class="material-symbols-outlined">add</span> Report an Item
+                </a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn--filled">
+                    <span class="material-symbols-outlined">login</span> Sign in to report an item
+                </a>
             {% endif %}
         </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block fab %}
+{% if current_user.is_authenticated %}
+<a href="{{ url_for('add_item') }}" class="fab" title="Report an item">
+    <span class="material-symbols-outlined">add</span>
+    <span class="fab__label">Report Item</span>
+</a>
+{% endif %}
 {% endblock %}

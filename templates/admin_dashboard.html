@@ -1,48 +1,74 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Dashboard{% endblock %}
+{% block title %}Dashboard — Administration{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1><i class="fas fa-shield-alt"></i> Admin Dashboard</h1>
-    <p>System Overview & Moderation</p>
+    <h1><span class="material-symbols-outlined">dashboard</span> Administration Dashboard</h1>
+    <p>Live totals for the register, computed on each request.</p>
 </div>
 
-<div class="admin-nav mb-4">
-    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary"><i class="fas fa-chart-line"></i> Dashboard Metrics</a>
-    <a href="{{ url_for('admin_items') }}" class="btn btn-secondary"><i class="fas fa-boxes"></i> Manage Items</a>
-    <a href="{{ url_for('admin_users') }}" class="btn btn-secondary"><i class="fas fa-users"></i> Manage Users</a>
+<nav class="tabs">
+    <a href="{{ url_for('admin_dashboard') }}" class="tab tab--active">
+        <span class="material-symbols-outlined">insights</span> Overview
+    </a>
+    <a href="{{ url_for('admin_items') }}" class="tab">
+        <span class="material-symbols-outlined">list_alt</span> Items
+    </a>
+    <a href="{{ url_for('admin_users') }}" class="tab">
+        <span class="material-symbols-outlined">group</span> Users
+    </a>
+</nav>
+
+<div class="stat-grid">
+    <div class="stat-card stat-card--primary">
+        <div class="stat-card__icon"><span class="material-symbols-outlined">group</span></div>
+        <div class="stat-card__value">{{ total_users }}</div>
+        <div class="stat-card__label">Registered members</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card__icon"><span class="material-symbols-outlined">inventory_2</span></div>
+        <div class="stat-card__value">{{ total_items }}</div>
+        <div class="stat-card__label">Items on the register</div>
+    </div>
+
+    <div class="stat-card stat-card--lost">
+        <div class="stat-card__icon"><span class="material-symbols-outlined">search</span></div>
+        <div class="stat-card__value">{{ total_lost }}</div>
+        <div class="stat-card__label">Reported lost</div>
+    </div>
+
+    <div class="stat-card stat-card--found">
+        <div class="stat-card__icon"><span class="material-symbols-outlined">check_circle</span></div>
+        <div class="stat-card__value">{{ total_found }}</div>
+        <div class="stat-card__label">Found, awaiting a claim</div>
+    </div>
+
+    <div class="stat-card stat-card--claimed">
+        <div class="stat-card__icon"><span class="material-symbols-outlined">handshake</span></div>
+        <div class="stat-card__value">{{ total_claimed }}</div>
+        <div class="stat-card__label">Successfully claimed</div>
+    </div>
 </div>
 
-<div class="items-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-    <div class="item-card glass-panel" style="text-align: center; padding: 2rem;">
-        <i class="fas fa-users mb-2" style="font-size: 2.5rem; color: var(--primary-color);"></i>
-        <h2 style="font-size: 2.5rem; color: white; margin: 1rem 0;">{{ total_users }}</h2>
-        <span style="color: var(--text-secondary); font-weight: 500;">Total Users</span>
+<div class="card">
+    <div class="card__header">
+        <h2>Moderation</h2>
+        <p>Remove reports or accounts that breach campus policy.</p>
     </div>
-    
-    <div class="item-card glass-panel" style="text-align: center; padding: 2rem;">
-        <i class="fas fa-boxes mb-2" style="font-size: 2.5rem; color: var(--text-primary);"></i>
-        <h2 style="font-size: 2.5rem; color: white; margin: 1rem 0;">{{ total_items }}</h2>
-        <span style="color: var(--text-secondary); font-weight: 500;">Total Items</span>
-    </div>
-
-    <div class="item-card glass-panel" style="text-align: center; padding: 2rem;">
-        <i class="fas fa-search mb-2" style="font-size: 2.5rem; color: var(--status-lost);"></i>
-        <h2 style="font-size: 2.5rem; color: white; margin: 1rem 0;">{{ total_lost }}</h2>
-        <span style="color: var(--text-secondary); font-weight: 500;">Currently Lost</span>
-    </div>
-
-    <div class="item-card glass-panel" style="text-align: center; padding: 2rem;">
-        <i class="fas fa-check-circle mb-2" style="font-size: 2.5rem; color: var(--status-found);"></i>
-        <h2 style="font-size: 2.5rem; color: white; margin: 1rem 0;">{{ total_found }}</h2>
-        <span style="color: var(--text-secondary); font-weight: 500;">Found Needs Claiming</span>
-    </div>
-
-    <div class="item-card glass-panel" style="text-align: center; padding: 2rem;">
-        <i class="fas fa-handshake mb-2" style="font-size: 2.5rem; color: var(--status-claimed);"></i>
-        <h2 style="font-size: 2.5rem; color: white; margin: 1rem 0;">{{ total_claimed }}</h2>
-        <span style="color: var(--text-secondary); font-weight: 500;">Successfully Claimed</span>
+    <div class="card__body">
+        <div class="status-form">
+            <a href="{{ url_for('admin_items') }}" class="btn btn--tonal">
+                <span class="material-symbols-outlined">list_alt</span> Review all items
+            </a>
+            <a href="{{ url_for('admin_users') }}" class="btn btn--tonal">
+                <span class="material-symbols-outlined">manage_accounts</span> Review all members
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn--outlined">
+                <span class="material-symbols-outlined">visibility</span> View the public register
+            </a>
+        </div>
     </div>
 </div>
 {% endblock %}

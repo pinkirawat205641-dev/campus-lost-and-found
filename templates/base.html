@@ -3,55 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Lost & Found Portal{% endblock %}</title>
+    <meta name="theme-color" content="#4054b2">
+    <title>{% block title %}CampusFind — Lost &amp; Found Portal{% endblock %}</title>
+
+    <!-- Roboto is the Material Design type family -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Material Symbols supplies the icon set -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="{{ url_for('index') }}" class="nav-brand">
-                <i class="fas fa-search-location"></i> CampusFind
-            </a>
-            <div class="nav-links">
-                <a href="{{ url_for('index') }}" class="nav-item">Browse Items</a>
-                {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('add_item') }}" class="nav-item btn-primary"><i class="fas fa-plus"></i> Post Item</a>
-                    {% if current_user.role == 'admin' %}
-                    <a href="{{ url_for('admin_dashboard') }}" class="nav-item"><i class="fas fa-shield-alt"></i> Dashboard</a>
-                    {% endif %}
-                    <span class="nav-item user-greeting">Hi, {{ current_user.name }}</span>
-                    <a href="{{ url_for('logout') }}" class="nav-item">Logout</a>
-                {% else %}
-                    <a href="{{ url_for('login') }}" class="nav-item">Login</a>
-                    <a href="{{ url_for('register') }}" class="nav-item btn-primary">Sign Up</a>
-                {% endif %}
-            </div>
-        </div>
-    </nav>
+<body class="{% block bodyclass %}{% endblock %}">
 
-    <main class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="flash-messages">
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">
-                            {{ message }}
-                            <span class="close-btn" onclick="this.parentElement.style.display='none';">&times;</span>
-                        </div>
-                    {% endfor %}
+    <!-- ================= TOP APP BAR ================= -->
+    <header class="app-bar">
+        {% block appbar_menu %}
+        <button class="app-bar__menu" id="drawerToggle" type="button" aria-label="Open navigation menu" aria-controls="navDrawer" aria-expanded="false">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+        {% endblock %}
+
+        <a href="{{ url_for('index') }}" class="app-bar__brand">
+            <span class="app-bar__logo"><span class="material-symbols-outlined">travel_explore</span></span>
+            CampusFind
+        </a>
+
+        <span class="app-bar__spacer"></span>
+
+        <div class="app-bar__actions">
+            {% if current_user.is_authenticated %}
+                <div class="account">
+                    <span class="account__avatar">{{ current_user.name[0]|upper }}</span>
+                    <span class="account__name">{{ current_user.name }}</span>
                 </div>
+                <a href="{{ url_for('logout') }}" class="btn btn--icon" title="Sign out" aria-label="Sign out">
+                    <span class="material-symbols-outlined">logout</span>
+                </a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn--text">Sign in</a>
+                <a href="{{ url_for('register') }}" class="btn btn--filled btn--sm">Create account</a>
             {% endif %}
-        {% endwith %}
+        </div>
+    </header>
 
-        {% block content %}{% endblock %}
+    <!-- ================= NAVIGATION DRAWER ================= -->
+    {% block navigation %}
+    <nav class="nav-drawer" id="navDrawer" aria-label="Main navigation">
+        <p class="nav-drawer__section">Items</p>
+
+        <a href="{{ url_for('index') }}" class="nav-item {% if request.endpoint == 'index' %}nav-item--active{% endif %}">
+            <span class="material-symbols-outlined">inventory_2</span> Browse Items
+        </a>
+
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('add_item') }}" class="nav-item {% if request.endpoint == 'add_item' %}nav-item--active{% endif %}">
+            <span class="material-symbols-outlined">add_circle</span> Report an Item
+        </a>
+        {% endif %}
+
+        {% if current_user.is_authenticated and current_user.role == 'admin' %}
+            <div class="nav-drawer__divider"></div>
+            <p class="nav-drawer__section">Administration</p>
+
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-item {% if request.endpoint == 'admin_dashboard' %}nav-item--active{% endif %}">
+                <span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+            <a href="{{ url_for('admin_items') }}" class="nav-item {% if request.endpoint == 'admin_items' %}nav-item--active{% endif %}">
+                <span class="material-symbols-outlined">list_alt</span> Manage Items
+            </a>
+            <a href="{{ url_for('admin_users') }}" class="nav-item {% if request.endpoint == 'admin_users' %}nav-item--active{% endif %}">
+                <span class="material-symbols-outlined">group</span> Manage Users
+            </a>
+        {% endif %}
+
+        <div class="nav-drawer__divider"></div>
+        <p class="nav-drawer__section">Account</p>
+
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('logout') }}" class="nav-item">
+                <span class="material-symbols-outlined">logout</span> Sign Out
+            </a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="nav-item {% if request.endpoint == 'login' %}nav-item--active{% endif %}">
+                <span class="material-symbols-outlined">login</span> Sign In
+            </a>
+            <a href="{{ url_for('register') }}" class="nav-item {% if request.endpoint == 'register' %}nav-item--active{% endif %}">
+                <span class="material-symbols-outlined">person_add</span> Create Account
+            </a>
+        {% endif %}
+    </nav>
+    <div class="scrim" id="drawerScrim"></div>
+    {% endblock %}
+
+    <!-- ================= CONTENT REGION ================= -->
+    <main class="content">
+        <div class="content__inner">
+            {% block content %}{% endblock %}
+        </div>
     </main>
 
     <footer class="footer">
-        <p>&copy; 2026 CampusFind - College Lost & Found Portal</p>
+        <p class="mb-0">&copy; 2026 CampusFind — College Campus Lost &amp; Found System</p>
     </footer>
+
+    <!-- ================= SNACKBARS ================= -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="snackbars">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                <span class="material-symbols-outlined">
+                    {%- if category == 'danger' -%}error
+                    {%- elif category == 'success' -%}check_circle
+                    {%- elif category == 'warning' -%}warning
+                    {%- else -%}info{%- endif -%}
+                </span>
+                <span class="alert__text">{{ message }}</span>
+                <button class="alert__close" type="button" aria-label="Dismiss">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    {% block fab %}{% endblock %}
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
